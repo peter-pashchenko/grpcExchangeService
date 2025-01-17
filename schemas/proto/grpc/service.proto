@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package exchangeRate_service.v1;
+
+option go_package="./internal/generated/grpc/exchangeRate;exchangeRateService_v1";
+
+service exchangeRateService{
+  rpc GetRates(EmptyRequest) returns (GetRatesResponse);
+  rpc HealthCheck(EmptyRequest) returns (HealthCheckResponse);
+}
+
+message EmptyRequest{}
+
+message GetRatesResponse{
+  int64 timestamp=1;
+  string askPrice=2;
+  string bidPrice=3;
+}
+message HealthCheckResponse{
+  bool healthcheckpass=1;
+}
+

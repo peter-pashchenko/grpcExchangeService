@@ -1,0 +1,67 @@
+version: '3.1'
+
+networks:
+  project_network:
+    driver: bridge
+
+services:
+  exchange_rate:
+    image: exchangerate
+    build:
+      context: .
+#    dockerfile: ./deploy/docker-compose/Dockerfile
+#    restart: on-failure
+    ports:
+      - "${GRPC_PORT}:${GRPC_PORT}"
+      - "${HTTP_PORT}:${HTTP_PORT}"
+    env_file:
+      .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - project_network
+
+
+  postgres:
+    image: postgres:15
+    restart: always
+    build:
+      context: .
+    env_file:
+      .env
+    ports:
+      - "${PG_PORT}:${PG_PORT}"
+    volumes:
+      - ./deploy/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf -h ${PG_HOST}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U template_service" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - project_network
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "${PROM_PORT}:${PROM_PORT}"
+    volumes:
+       - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - project_network
+    depends_on:
+      - exchange_rate
+
+  jaeger:
+    image: jaegertracing/all-in-one
+    env_file:
+      - .env
+    environment:
+      COLLECTOR_HTTP_PORT: "${HTTP_PORT}"
+    ports:
+      - "${JAEGER_PORT}:${JAEGER_PORT}"
+

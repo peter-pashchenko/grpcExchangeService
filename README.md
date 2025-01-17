@@ -104,9 +104,11 @@
    1. git clone
    2. Копирование файла .env.example и внесение актуальных переменных окружения
    3. Сборка образа приложения make docker-build
-   4. Запуск всех контейнеров make run
+   4. Запуск всех контейнеров make run  
+
       4.1. Конфигурация базы через файл ./deploy/postgresql/postgresql.conf 
       или напрямую в строке command в файле ./deploy/docker-compose/docker-compose.yaml
+
    5. Остановка контейнеров через make stop 
       
 
